@@ -13,8 +13,10 @@ const PORT = 3000;
 
 app.use(express.json());
 
-// Path to persistent data store
-const DATA_STORE_PATH = path.join(process.cwd(), 'data-store.json');
+// Path to persistent data store (use /tmp on Vercel for writable filesystem)
+const DATA_STORE_PATH = process.env.VERCEL
+  ? path.join('/tmp', 'data-store.json')
+  : path.join(process.cwd(), 'data-store.json');
 
 // Pre-defined users for simulation/authentication
 const preDefinedUsers = [
@@ -81,6 +83,17 @@ function readDB(): DBStructure {
         pencatatan: initialPencatatan,
         pembinaan: initialPembinaan
       };
+
+      // If running on Vercel, copy existing seed file from build workspace if it exists
+      if (process.env.VERCEL) {
+        const localPath = path.join(process.cwd(), 'data-store.json');
+        if (fs.existsSync(localPath)) {
+          const content = fs.readFileSync(localPath, 'utf-8');
+          fs.writeFileSync(DATA_STORE_PATH, content, 'utf-8');
+          return JSON.parse(content);
+        }
+      }
+
       fs.writeFileSync(DATA_STORE_PATH, JSON.stringify(defaultData, null, 2), 'utf-8');
       return defaultData;
     }
