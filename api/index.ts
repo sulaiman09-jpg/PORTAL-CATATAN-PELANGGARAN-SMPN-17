@@ -195,8 +195,10 @@ async function proxyToGoogleScript(action: string, method: 'GET' | 'POST', body:
 
 // ---------------------- API ROUTES ----------------------
 
+const apiRouter = express.Router();
+
 // Auth API Route
-app.post('/api/auth/login', (req, res) => {
+apiRouter.post('/auth/login', (req, res) => {
   const { username, password } = req.body;
   const user = preDefinedUsers.find(u => u.username === username && u.password === password);
 
@@ -222,7 +224,7 @@ app.post('/api/auth/login', (req, res) => {
 });
 
 // Settings & Config status API
-app.get('/api/settings/config', (req, res) => {
+apiRouter.get('/settings/config', (req, res) => {
   res.json({
     success: true,
     data: {
@@ -232,7 +234,7 @@ app.get('/api/settings/config', (req, res) => {
   });
 });
 
-app.post('/api/settings/config', (req, res) => {
+apiRouter.post('/settings/config', (req, res) => {
   const { googleScriptUrl } = req.body;
   
   try {
@@ -291,7 +293,7 @@ app.post('/api/settings/config', (req, res) => {
 });
 
 // General Data API Endpoint matching Google Apps Script proxy requirements
-app.get('/api/data', async (req, res) => {
+apiRouter.get('/data', async (req, res) => {
   const action = req.query.action as string;
 
   // Check if we should proxy to Google Sheets
@@ -325,7 +327,7 @@ app.get('/api/data', async (req, res) => {
   }
 });
 
-app.post('/api/data', async (req, res) => {
+apiRouter.post('/data', async (req, res) => {
   const action = req.query.action as string;
   const body = req.body;
 
@@ -480,5 +482,9 @@ app.post('/api/data', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Action tidak dikenali atau tidak disupport lewat POST.' });
   }
 });
+
+// Mount the apiRouter under both "/api" and "/" to guarantee it runs flawlessly locally AND on Vercel serverless environments!
+app.use('/api', apiRouter);
+app.use('/', apiRouter);
 
 export default app;
