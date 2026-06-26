@@ -1,0 +1,248 @@
+{
+  "siswa": [
+    {
+      "id": "S001",
+      "nis": "21001",
+      "nama": "Ahmad Fauzi",
+      "kelas": "9-A",
+      "jk": "L",
+      "namaOrangTua": "Budi Fauzi",
+      "noHp": "081234567890"
+    },
+    {
+      "id": "S002",
+      "nis": "21002",
+      "nama": "Siti Nurhaliza",
+      "kelas": "9-A",
+      "jk": "P",
+      "namaOrangTua": "Nurhalim",
+      "noHp": "081345678901"
+    },
+    {
+      "id": "S003",
+      "nis": "21003",
+      "nama": "Rizky Ramadhan",
+      "kelas": "8-B",
+      "jk": "L",
+      "namaOrangTua": "Ramadhan",
+      "noHp": "081987654321"
+    },
+    {
+      "id": "S004",
+      "nis": "21004",
+      "nama": "Chelsea Olivia",
+      "kelas": "8-B",
+      "jk": "P",
+      "namaOrangTua": "Hendra",
+      "noHp": "081222333444"
+    },
+    {
+      "id": "S005",
+      "nis": "21005",
+      "nama": "Muhammad Yusuf",
+      "kelas": "7-A",
+      "jk": "L",
+      "namaOrangTua": "Yusuf Ibrahim",
+      "noHp": "085711122233"
+    },
+    {
+      "id": "S006",
+      "nis": "21006",
+      "nama": "Amanda Manopo",
+      "kelas": "7-C",
+      "jk": "P",
+      "namaOrangTua": "Denny",
+      "noHp": "087812345678"
+    },
+    {
+      "id": "S007",
+      "nis": "21007",
+      "nama": "Budi Santoso",
+      "kelas": "9-B",
+      "jk": "L",
+      "namaOrangTua": "Joko Santoso",
+      "noHp": "085299998888"
+    },
+    {
+      "id": "S008",
+      "nis": "21008",
+      "nama": "Dewi Lestari",
+      "kelas": "8-A",
+      "jk": "P",
+      "namaOrangTua": "Adi Lestari",
+      "noHp": "081122334455"
+    }
+  ],
+  "pelanggaran": [
+    {
+      "id": "P001",
+      "kode": "PK01",
+      "namaPelanggaran": "Terlambat masuk sekolah",
+      "kategori": "Ringan",
+      "poin": 5
+    },
+    {
+      "id": "P002",
+      "kode": "PK02",
+      "namaPelanggaran": "Tidak memakai atribut seragam lengkap (topi, dasi, ikat pinggang)",
+      "kategori": "Ringan",
+      "poin": 5
+    },
+    {
+      "id": "P003",
+      "kode": "PK03",
+      "namaPelanggaran": "Membawa HP/Gadget tanpa izin guru",
+      "kategori": "Ringan",
+      "poin": 10
+    },
+    {
+      "id": "P004",
+      "kode": "PK04",
+      "namaPelanggaran": "Rambut gondrong atau tidak rapi (siswa laki-laki)",
+      "kategori": "Ringan",
+      "poin": 10
+    },
+    {
+      "id": "P005",
+      "kode": "PS01",
+      "namaPelanggaran": "Membolos saat jam pelajaran",
+      "kategori": "Sedang",
+      "poin": 20
+    },
+    {
+      "id": "P006",
+      "kode": "PS02",
+      "namaPelanggaran": "Keluar lingkungan sekolah tanpa izin",
+      "kategori": "Sedang",
+      "poin": 20
+    },
+    {
+      "id": "P007",
+      "kode": "PS03",
+      "namaPelanggaran": "Berpakaian tidak sopan / mencoret-coret seragam",
+      "kategori": "Sedang",
+      "poin": 15
+    },
+    {
+      "id": "P008",
+      "kode": "PB01",
+      "namaPelanggaran": "Merokok atau membawa rokok di sekolah",
+      "kategori": "Berat",
+      "poin": 50
+    },
+    {
+      "id": "P009",
+      "kode": "PB02",
+      "namaPelanggaran": "Merusak sarana dan prasarana sekolah secara sengaja",
+      "kategori": "Berat",
+      "poin": 50
+    },
+    {
+      "id": "P010",
+      "kode": "PB03",
+      "namaPelanggaran": "Terlibat dalam perkelahian atau tawuran",
+      "kategori": "Berat",
+      "poin": 75
+    },
+    {
+      "id": "P011",
+      "kode": "PB04",
+      "namaPelanggaran": "Mencuri barang milik orang lain atau milik sekolah",
+      "kategori": "Berat",
+      "poin": 75
+    },
+    {
+      "id": "P012",
+      "kode": "PB05",
+      "namaPelanggaran": "Membawa senjata tajam, narkoba, atau minuman keras",
+      "kategori": "Berat",
+      "poin": 100
+    }
+  ],
+  "pencatatan": [
+    {
+      "id": "R001",
+      "tanggal": "2026-06-10",
+      "nis": "21007",
+      "namaSiswa": "Budi Santoso",
+      "kelas": "9-B",
+      "pelanggaran": "Terlambat masuk sekolah",
+      "poin": 5,
+      "petugas": "Sulaiman, S.Psi.",
+      "keterangan": "Kesiangan karena macet"
+    },
+    {
+      "id": "R002",
+      "tanggal": "2026-06-15",
+      "nis": "21007",
+      "namaSiswa": "Budi Santoso",
+      "kelas": "9-B",
+      "pelanggaran": "Rambut gondrong atau tidak rapi (siswa laki-laki)",
+      "poin": 10,
+      "petugas": "Sulaiman, S.Psi.",
+      "keterangan": "Rambut bagian belakang menyentuh kerah"
+    },
+    {
+      "id": "R003",
+      "tanggal": "2026-06-20",
+      "nis": "21007",
+      "namaSiswa": "Budi Santoso",
+      "kelas": "9-B",
+      "pelanggaran": "Membolos saat jam pelajaran",
+      "poin": 20,
+      "petugas": "Paramita Sari, S.Kom.",
+      "keterangan": "Nongkrong di kantin saat jam matematika"
+    },
+    {
+      "id": "R004",
+      "tanggal": "2026-06-24",
+      "nis": "21003",
+      "namaSiswa": "Rizky Ramadhan",
+      "kelas": "8-B",
+      "pelanggaran": "Tidak memakai atribut seragam lengkap (topi, dasi, ikat pinggang)",
+      "poin": 5,
+      "petugas": "Sulaiman, S.Psi.",
+      "keterangan": "Tidak pakai dasi saat upacara bendera"
+    },
+    {
+      "id": "R005",
+      "tanggal": "2026-06-01",
+      "nis": "21001",
+      "namaSiswa": "Ahmad Fauzi",
+      "kelas": "9-A",
+      "pelanggaran": "Terlibat dalam perkelahian atau tawuran",
+      "poin": 75,
+      "petugas": "Aulia Rohmah",
+      "keterangan": "Tawuran di luar gerbang sekolah"
+    },
+    {
+      "id": "R006",
+      "tanggal": "2026-06-12",
+      "nis": "21001",
+      "namaSiswa": "Ahmad Fauzi",
+      "kelas": "9-A",
+      "pelanggaran": "Merokok atau membawa rokok di sekolah",
+      "poin": 50,
+      "petugas": "Sulaiman, S.Psi.",
+      "keterangan": "Ketahuan merokok di toilet belakang"
+    }
+  ],
+  "pembinaan": [
+    {
+      "id": "B001",
+      "nis": "21007",
+      "namaSiswa": "Budi Santoso",
+      "totalPoin": 35,
+      "tindakan": "Teguran Tertulis",
+      "tanggal": "2026-06-20"
+    },
+    {
+      "id": "B002",
+      "nis": "21001",
+      "namaSiswa": "Ahmad Fauzi",
+      "totalPoin": 125,
+      "tindakan": "Sidang Disiplin",
+      "tanggal": "2026-06-12"
+    }
+  ]
+}
