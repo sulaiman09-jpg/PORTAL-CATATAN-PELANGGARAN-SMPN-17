@@ -2,7 +2,55 @@ import express from 'express';
 import path from 'path';
 import fs from 'fs';
 import dotenv from 'dotenv';
-import { Siswa, Pelanggaran, Pencatatan, Pembinaan, User } from '../src/types';
+
+// Inline database interfaces to make the Serverless Function completely self-contained and avoid import issues
+export interface Siswa {
+  id: string;
+  nis: string;
+  nama: string;
+  kelas: string;
+  jk: 'L' | 'P';
+  namaOrangTua: string;
+  noHp: string;
+}
+
+export interface Pelanggaran {
+  id: string;
+  kode: string;
+  namaPelanggaran: string;
+  kategori: 'Ringan' | 'Sedang' | 'Berat';
+  poin: number;
+}
+
+export interface Pencatatan {
+  id: string;
+  tanggal: string;
+  nis: string;
+  namaSiswa: string;
+  kelas: string;
+  pelanggaran: string;
+  poin: number;
+  petugas: string;
+  keterangan: string;
+}
+
+export interface Pembinaan {
+  id: string;
+  nis: string;
+  namaSiswa: string;
+  totalPoin: number;
+  tindakan: string;
+  tanggal: string;
+}
+
+export type Role = 'Admin' | 'Guru BK' | 'Guru Piket';
+
+export interface User {
+  username: string;
+  nama: string;
+  role: Role;
+  kelasAjar?: string;
+}
 
 // Load environment variables
 dotenv.config();
@@ -10,6 +58,55 @@ dotenv.config();
 const app = express();
 
 app.use(express.json());
+
+// Extremely robust request logger and URL normalizer middleware for Vercel Serverless environment
+app.use((req, res, next) => {
+  const originalUrl = req.url;
+  console.log(`[Express API] Incoming: ${req.method} ${originalUrl}`);
+
+  // 1. Check for original URL headers set by Vercel or proxies as a fallback
+  const originalUrlHeader = req.headers['x-original-url'] as string;
+  const forwardedUrlHeader = req.headers['x-forwarded-url'] as string;
+  
+  let targetUrl = '';
+  if (originalUrlHeader && originalUrlHeader.startsWith('/api')) {
+    targetUrl = originalUrlHeader;
+  } else if (forwardedUrlHeader && forwardedUrlHeader.startsWith('/api')) {
+    targetUrl = forwardedUrlHeader;
+  }
+  
+  if (targetUrl) {
+    console.log(`[Express API] Resolving req.url from header to: ${targetUrl}`);
+    req.url = targetUrl;
+  } else if (req.query && req.query.path) {
+    // 2. Query path parameter fallback
+    const subPath = req.query.path as string;
+    const cleanSubPath = subPath.replace(/^\/+|\/+$/g, '');
+    
+    const queryCopy = { ...req.query };
+    delete queryCopy.path;
+    const queryKeys = Object.keys(queryCopy);
+    const queryString = queryKeys.length > 0
+      ? '?' + queryKeys.map(k => `${k}=${encodeURIComponent(String(queryCopy[k]))}`).join('&')
+      : '';
+      
+    req.url = `/api/${cleanSubPath}${queryString}`;
+    console.log(`[Express API] Resolving req.url from query path to: ${req.url}`);
+  }
+
+  // 3. Normalize common Vercel-specific prefixes or function file paths
+  if (req.url.startsWith('/api/index.ts')) {
+    req.url = req.url.replace('/api/index.ts', '/api');
+  } else if (req.url.startsWith('/api/index')) {
+    req.url = req.url.replace('/api/index', '/api');
+  }
+
+  // Clean double slashes
+  req.url = req.url.replace(/\/+/g, '/');
+  
+  console.log(`[Express API] Final resolved URL for routing: ${req.url}`);
+  next();
+});
 
 // Path to persistent data store (use /tmp on Vercel for writable filesystem)
 const DATA_STORE_PATH = process.env.VERCEL
@@ -75,6 +172,9 @@ interface DBStructure {
 function readDB(): DBStructure {
   try {
     if (!fs.existsSync(DATA_STORE_PATH)) {
+      // Ensure the directory exists recursively before writing
+      fs.mkdirSync(path.dirname(DATA_STORE_PATH), { recursive: true });
+
       const defaultData: DBStructure = {
         siswa: initialSiswa,
         pelanggaran: initialPelanggaran,
@@ -111,6 +211,7 @@ function readDB(): DBStructure {
 // Write database
 function writeDB(data: DBStructure) {
   try {
+    fs.mkdirSync(path.dirname(DATA_STORE_PATH), { recursive: true });
     fs.writeFileSync(DATA_STORE_PATH, JSON.stringify(data, null, 2), 'utf-8');
   } catch (err) {
     console.error('Error writing DB:', err);
@@ -486,5 +587,25 @@ apiRouter.post('/data', async (req, res) => {
 // Mount the apiRouter under both "/api" and "/" to guarantee it runs flawlessly locally AND on Vercel serverless environments!
 app.use('/api', apiRouter);
 app.use('/', apiRouter);
+
+// Global Error Handler for Serverless Environments (prevents silent crashes and returns clear JSON errors)
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('[Global Error Handler] Caught error:', err);
+  res.status(500).json({
+    success: false,
+    message: 'Terjadi kesalahan internal pada server.',
+    error: err.message || String(err),
+    stack: process.env.NODE_ENV !== 'production' ? err.stack : undefined
+  });
+});
+
+// Process-level event listeners to capture async or top-level failures gracefully
+process.on('uncaughtException', (err) => {
+  console.error('[Uncaught Exception Alert]:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[Unhandled Rejection Alert]:', reason);
+});
 
 export default app;
