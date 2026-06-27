@@ -64,37 +64,10 @@ app.use((req, res, next) => {
   const originalUrl = req.url;
   console.log(`[Express API] Incoming: ${req.method} ${originalUrl}`);
 
-  // 1. Check for original URL headers set by Vercel or proxies as a fallback
-  const originalUrlHeader = req.headers['x-original-url'] as string;
-  const forwardedUrlHeader = req.headers['x-forwarded-url'] as string;
-  
-  let targetUrl = '';
-  if (originalUrlHeader && originalUrlHeader.startsWith('/api')) {
-    targetUrl = originalUrlHeader;
-  } else if (forwardedUrlHeader && forwardedUrlHeader.startsWith('/api')) {
-    targetUrl = forwardedUrlHeader;
-  }
-  
-  if (targetUrl) {
-    console.log(`[Express API] Resolving req.url from header to: ${targetUrl}`);
-    req.url = targetUrl;
-  } else if (req.query && req.query.path) {
-    // 2. Query path parameter fallback
-    const subPath = req.query.path as string;
-    const cleanSubPath = subPath.replace(/^\/+|\/+$/g, '');
-    
-    const queryCopy = { ...req.query };
-    delete queryCopy.path;
-    const queryKeys = Object.keys(queryCopy);
-    const queryString = queryKeys.length > 0
-      ? '?' + queryKeys.map(k => `${k}=${encodeURIComponent(String(queryCopy[k]))}`).join('&')
-      : '';
-      
-    req.url = `/api/${cleanSubPath}${queryString}`;
-    console.log(`[Express API] Resolving req.url from query path to: ${req.url}`);
-  }
-
-  // 3. Normalize common Vercel-specific prefixes or function file paths
+  // We should NOT overwrite req.url with x-matched-path (which is always "/api/index.ts")
+  // because that discards the requested sub-path (like "/auth/login").
+  // Vercel naturally delivers the original path in req.url. 
+  // We only normalize if the URL literally contains the file name "/api/index.ts" or "/api/index".
   if (req.url.startsWith('/api/index.ts')) {
     req.url = req.url.replace('/api/index.ts', '/api');
   } else if (req.url.startsWith('/api/index')) {
