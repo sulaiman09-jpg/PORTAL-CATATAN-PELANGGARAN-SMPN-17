@@ -559,10 +559,10 @@ export default function LaporanSiswa({ pencatatan, siswa }: LaporanSiswaProps) {
         
         {/* Printable Institution Header (Hidden in standard screen, visible ONLY when printing PDF) */}
         <div className="hidden print-only text-center border-b-4 border-double border-slate-900 pb-4 mb-6">
-          <h1 className="text-lg font-black uppercase tracking-wider text-slate-950 font-display">YAYASAN PENDIDIKAN DHARMA PERTIWI</h1>
-          <h2 className="text-2xl font-black text-slate-900 font-display">SMP DHARMA PERTIWI JAKARTA</h2>
-          <p className="text-xs text-slate-500 italic mt-1">
-            Jl. Raya Perjuangan No. 45, Kebon Jeruk, Jakarta Barat • Telp: (021) 5367890
+          <h1 className="text-lg font-black uppercase tracking-wider text-slate-950 font-display">PEMERINTAH KOTA TANGERANG SELATAN</h1>
+          <h2 className="text-2xl font-black text-slate-900 font-display">UPTD SMP NEGERI 17 KOTA TANGERANG SELATAN</h2>
+          <p className="text-xs text-slate-500 mt-1">
+            Komplek Pamulang Permai Barat 1 Rt 03/10 Pamulang - kota Tangerang Selatan 15417
           </p>
           <div className="text-center font-bold text-slate-900 uppercase underline text-sm mt-5 tracking-tight font-display">
             LAPORAN REKAPITULASI PELANGGARAN TATA TERTIB SISWA
@@ -603,12 +603,13 @@ export default function LaporanSiswa({ pencatatan, siswa }: LaporanSiswaProps) {
                 <th className="py-3 px-3 w-14 text-center">Poin</th>
                 <th className="py-3 px-3">Petugas Pelapor</th>
                 <th className="py-3 px-3">Keterangan</th>
+                <th className="py-3 px-3 no-print">Foto Bukti</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 print:divide-slate-300 text-slate-700">
               {filteredRecords.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400 italic">
+                  <td colSpan={10} className="py-12 text-center text-slate-400 italic">
                     Tidak ada catatan kasus kesiswaan pada filter terpilih.
                   </td>
                 </tr>
@@ -624,6 +625,13 @@ export default function LaporanSiswa({ pencatatan, siswa }: LaporanSiswaProps) {
                     <td className="py-2.5 px-3 text-center font-mono font-extrabold text-rose-600">+{record.poin}</td>
                     <td className="py-2.5 px-3 text-slate-600 font-medium">{record.petugas}</td>
                     <td className="py-2.5 px-3 text-slate-500 italic max-w-xs truncate">{record.keterangan || '-'}</td>
+                    <td className="py-2.5 px-3 no-print">
+                      {record.foto ? (
+                        <img src={record.foto} alt="Bukti" className="w-8 h-8 object-cover rounded border border-slate-200" referrerPolicy="no-referrer" />
+                      ) : (
+                        <span className="text-slate-300">-</span>
+                      )}
+                    </td>
                   </tr>
                 ))
               )}
@@ -642,10 +650,10 @@ export default function LaporanSiswa({ pencatatan, siswa }: LaporanSiswaProps) {
           </div>
 
           <div className="space-y-16">
-            <span className="block font-medium">Jakarta, {new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}<br />Koordinator BK / Kesiswaan</span>
+            <span className="block font-medium">Tangerang Selatan, {new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}<br />Koordinator BK / Kesiswaan</span>
             <div className="space-y-1">
               <span className="block font-bold underline">Sulaiman, S.Psi.</span>
-              <span className="block text-[10px] text-slate-500 font-mono">NIP. 198205152009042002</span>
+              <span className="block text-[10px] text-slate-500 font-mono">NIP. 198209202022211009</span>
             </div>
           </div>
         </div>

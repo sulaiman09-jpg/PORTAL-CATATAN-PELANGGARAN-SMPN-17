@@ -27,7 +27,8 @@ export default function SiswaList({ siswa, pencatatan, userRole, onAddStudent, o
     kelas: '',
     jk: 'L',
     namaOrangTua: '',
-    noHp: ''
+    noHp: '',
+    foto: ''
   });
 
   // Delete confirmation state
@@ -58,7 +59,8 @@ export default function SiswaList({ siswa, pencatatan, userRole, onAddStudent, o
       kelas: '',
       jk: 'L',
       namaOrangTua: '',
-      noHp: ''
+      noHp: '',
+      foto: ''
     });
     setErrorMsg('');
     setIsModalOpen(true);
@@ -67,9 +69,45 @@ export default function SiswaList({ siswa, pencatatan, userRole, onAddStudent, o
   // 4. Open Modal for Edit
   const handleOpenEdit = (student: Siswa) => {
     setModalTitle('Edit Data Siswa');
-    setFormState(student);
+    setFormState({
+      ...student,
+      foto: student.foto || ''
+    });
     setErrorMsg('');
     setIsModalOpen(true);
+  };
+
+  // Image compression and base64 helper for student profile
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 400;
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > MAX_WIDTH) {
+          height = Math.round((height * MAX_WIDTH) / width);
+          width = MAX_WIDTH;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+          setFormState(prev => ({ ...prev, foto: compressedBase64 }));
+        }
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
   };
 
   // 5. Submit Form (Save student)
@@ -364,6 +402,43 @@ export default function SiswaList({ siswa, pencatatan, userRole, onAddStudent, o
                   placeholder="Contoh: 08123456789"
                   className="w-full px-3 py-2 text-sm border border-slate-200 focus:border-blue-500 rounded-xl outline-none transition-all font-mono"
                 />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-500 block">Foto Profil Siswa (Opsional untuk Kartu Digital)</label>
+                <div className="flex flex-col sm:flex-row items-center gap-4 p-4 border border-dashed border-slate-200 rounded-2xl bg-slate-50 hover:bg-slate-100/50 transition-colors">
+                  <div className="relative flex flex-col items-center justify-center w-full h-24 border border-dashed border-slate-300 rounded-xl bg-white hover:bg-blue-50/20 transition-all overflow-hidden cursor-pointer group">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                    />
+                    <div className="space-y-1 text-center p-2">
+                      <svg className="mx-auto h-6 w-6 text-slate-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <p className="text-[11px] font-medium text-slate-600">
+                        Pilih foto profil (PNG/JPG)
+                      </p>
+                    </div>
+                  </div>
+                  {formState.foto && (
+                    <div className="relative w-24 h-24 rounded-xl overflow-hidden border border-slate-200 shrink-0 shadow-sm bg-white">
+                      <img src={formState.foto} alt="Pratinjau Siswa" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setFormState(prev => ({ ...prev, foto: '' }))}
+                        className="absolute top-1 right-1 bg-red-600 hover:bg-red-500 text-white rounded-full p-1 shadow-md transition-colors cursor-pointer"
+                        title="Hapus foto"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Action Buttons */}

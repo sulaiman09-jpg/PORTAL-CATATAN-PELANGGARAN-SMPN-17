@@ -223,6 +223,7 @@ export default function App() {
     tanggal: string;
     petugas: string;
     keterangan: string;
+    foto?: string;
   }): Promise<boolean> => {
     const res = await googleSheetApi.addRecord(recordData);
     if (res.success && res.data) {
@@ -385,7 +386,7 @@ export default function App() {
             <GraduationCap className="w-12 h-12" />
           </div>
           <div className="space-y-1">
-            <h1 className="text-2xl font-black text-white tracking-tight font-display">PORTAL KESISWAAN DIGITAL</h1>
+            <h1 className="text-2xl font-black text-white tracking-tight font-display">PORTAL BIMBINGAN & KONSELING</h1>
             <p className="text-xs text-slate-400 font-medium">Sistem Monitoring & Pencatatan Pelanggaran Tata Tertib Siswa</p>
           </div>
         </div>
@@ -507,7 +508,7 @@ export default function App() {
             <AlertTriangle className="w-5.5 h-5.5 text-rose-500 shrink-0 mt-0.5" />
           )}
           <div className="space-y-1">
-            <span className="text-xs font-bold text-slate-900 block">Sistem Kesiswaan</span>
+            <span className="text-xs font-bold text-slate-900 block">Sistem Bimbingan & Konseling</span>
             <p className="text-xs text-slate-600 leading-normal">{toast.message}</p>
           </div>
         </div>
@@ -517,7 +518,7 @@ export default function App() {
       <div className="md:hidden bg-blue-950 border-b border-blue-900 text-white py-4 px-5 flex justify-between items-center no-print">
         <div className="flex items-center gap-2">
           <GraduationCap className="w-6 h-6 text-blue-500" />
-          <span className="font-extrabold tracking-tight text-sm font-display">SIPEL - KESISWAAN</span>
+          <span className="font-extrabold tracking-tight text-sm font-display">SIPEL - BIMBINGAN & KONSELING</span>
         </div>
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -539,7 +540,7 @@ export default function App() {
             </div>
             <div className="space-y-0.5">
               <span className="font-bold text-white text-lg tracking-tight font-display block leading-none">SIPEL SISWA</span>
-              <span className="text-[10px] text-blue-300 font-semibold uppercase tracking-wider block">Portal Kesiswaan</span>
+              <span className="text-[10px] text-blue-300 font-semibold uppercase tracking-wider block">Portal Bimbingan & Konseling</span>
             </div>
           </div>
 

@@ -12,6 +12,7 @@ interface InputPelanggaranFormProps {
     tanggal: string;
     petugas: string;
     keterangan: string;
+    foto?: string;
   }) => Promise<boolean>;
 }
 
@@ -28,6 +29,7 @@ export default function InputPelanggaranForm({
   const [tanggal, setTanggal] = useState(new Date().toISOString().split('T')[0]);
   const [petugas, setPetugas] = useState(currentUser.nama || '');
   const [keterangan, setKeterangan] = useState('');
+  const [fotoBase64, setFotoBase64] = useState('');
 
   // UI States
   const [searchSiswaQuery, setSearchSiswaQuery] = useState('');
@@ -53,6 +55,39 @@ export default function InputPelanggaranForm({
     s.nis.includes(searchSiswaQuery) ||
     s.kelas.toLowerCase().includes(searchSiswaQuery.toLowerCase())
   );
+
+  // Image compression and base64 helper
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 400;
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > MAX_WIDTH) {
+          height = Math.round((height * MAX_WIDTH) / width);
+          width = MAX_WIDTH;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+          setFotoBase64(compressedBase64);
+        }
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Submit Handler
   const handleSubmit = async (e: React.FormEvent) => {
@@ -82,7 +117,8 @@ export default function InputPelanggaranForm({
       pelanggaran: selectedViolationName,
       tanggal,
       petugas,
-      keterangan
+      keterangan,
+      foto: fotoBase64
     });
 
     setIsLoading(false);
@@ -93,6 +129,7 @@ export default function InputPelanggaranForm({
       setSelectedNis('');
       setSelectedViolationName('');
       setKeterangan('');
+      setFotoBase64('');
       setSearchSiswaQuery('');
       
       // Auto fade-out success banner after 5 seconds
@@ -258,6 +295,49 @@ export default function InputPelanggaranForm({
               placeholder="Jelaskan detail kasus secara objektif (lokasi, barang bukti, saksi, kronologi singkat)..."
               className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 focus:border-blue-500 rounded-xl outline-none transition-all resize-none"
             />
+          </div>
+
+          {/* 6. UPLOAD FOTO BUKTI */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">6. Upload Foto Bukti Pelanggaran (Opsional)</label>
+            <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
+              <div className="flex-1">
+                <div className="border-2 border-dashed border-slate-200 hover:border-blue-400 rounded-xl p-4 text-center cursor-pointer transition-colors relative bg-slate-50/50">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  <div className="space-y-1 text-slate-500">
+                    <svg className="mx-auto h-8 w-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <p className="text-xs font-medium text-slate-600">
+                      Klik untuk memilih atau seret gambar ke sini
+                    </p>
+                    <p className="text-[10px] text-slate-400">
+                      Format PNG, JPG, atau JPEG (Otomatis dikompres)
+                    </p>
+                  </div>
+                </div>
+              </div>
+              {fotoBase64 && (
+                <div className="relative w-24 h-24 rounded-xl overflow-hidden border border-slate-200 shrink-0 self-center">
+                  <img src={fotoBase64} alt="Pratinjau" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setFotoBase64('')}
+                    className="absolute top-1 right-1 bg-red-600 hover:bg-red-500 text-white rounded-full p-1 shadow-md transition-colors"
+                    title="Hapus foto"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* SUBMIT BUTTON */}

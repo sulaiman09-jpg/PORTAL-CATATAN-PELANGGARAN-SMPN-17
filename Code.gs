@@ -82,9 +82,9 @@ function createJsonResponse(obj) {
 // Menginisialisasi sheet-sheet jika kosong / belum ada
 function initializeSheets(ss) {
   var sheets = {
-    'SISWA': ['ID', 'NIS', 'Nama', 'Kelas', 'JK', 'Nama Orang Tua', 'No HP'],
+    'SISWA': ['ID', 'NIS', 'Nama', 'Kelas', 'JK', 'Nama Orang Tua', 'No HP', 'Foto'],
     'PELANGGARAN': ['ID', 'Kode', 'Nama Pelanggaran', 'Kategori', 'Poin'],
-    'PENCATATAN': ['ID', 'Tanggal', 'NIS', 'Nama Siswa', 'Kelas', 'Pelanggaran', 'Poin', 'Petugas', 'Keterangan'],
+    'PENCATATAN': ['ID', 'Tanggal', 'NIS', 'Nama Siswa', 'Kelas', 'Pelanggaran', 'Poin', 'Petugas', 'Keterangan', 'Foto'],
     'PEMBINAAN': ['ID', 'NIS', 'Nama Siswa', 'Total Poin', 'Tindakan', 'Tanggal']
   };
   
@@ -105,6 +105,19 @@ function initializeSheets(ss) {
         sh.appendRow(['P003', 'PK03', 'Membawa HP/Gadget tanpa izin guru', 'Ringan', '10']);
         sh.appendRow(['P004', 'PS01', 'Membolos saat jam pelajaran', 'Sedang', '20']);
         sh.appendRow(['P005', 'PB01', 'Merokok atau membawa rokok di sekolah', 'Berat', '50']);
+      }
+    } else {
+      // Sheet exists, heal missing headers
+      var lastCol = sh.getLastColumn();
+      if (lastCol > 0) {
+        var existingHeaders = sh.getRange(1, 1, 1, lastCol).getValues()[0];
+        var expectedHeaders = sheets[name];
+        for (var i = 0; i < expectedHeaders.length; i++) {
+          var expected = expectedHeaders[i];
+          if (existingHeaders.indexOf(expected) === -1) {
+            sh.getRange(1, sh.getLastColumn() + 1).setValue(expected);
+          }
+        }
       }
     }
   }
@@ -142,7 +155,8 @@ function getStudents(ss) {
       kelas: String(item['Kelas'] || ''),
       jk: String(item['JK'] || 'L'),
       namaOrangTua: String(item['Nama Orang Tua'] || ''),
-      noHp: String(item['No HP'] || '')
+      noHp: String(item['No HP'] || ''),
+      foto: String(item['Foto'] || '')
     };
   });
 }
@@ -178,7 +192,8 @@ function getRecords(ss) {
       pelanggaran: String(item['Pelanggaran'] || ''),
       poin: Number(item['Poin'] || 0),
       petugas: String(item['Petugas'] || ''),
-      keterangan: String(item['Keterangan'] || '')
+      keterangan: String(item['Keterangan'] || ''),
+      foto: String(item['Foto'] || '')
     };
   });
   
@@ -213,7 +228,7 @@ function addStudent(ss, data) {
     }
   }
   
-  var rowData = [id, data.nis, data.nama, data.kelas, data.jk, data.namaOrangTua, data.noHp];
+  var rowData = [id, data.nis, data.nama, data.kelas, data.jk, data.namaOrangTua, data.noHp, data.foto || ''];
   
   if (foundRow !== -1) {
     // Update existing
@@ -347,7 +362,7 @@ function addRecord(ss, data) {
   }
   
   var tanggal = data.tanggal || new Date().toISOString().split('T')[0];
-  var rowData = [id, tanggal, data.nis, siswaNama, siswaKelas, data.pelanggaran, poin, data.petugas, data.keterangan || ''];
+  var rowData = [id, tanggal, data.nis, siswaNama, siswaKelas, data.pelanggaran, poin, data.petugas, data.keterangan || '', data.foto || ''];
   
   if (foundRow !== -1) {
     shPencatatan.getRange(foundRow, 1, 1, rowData.length).setValues([rowData]);

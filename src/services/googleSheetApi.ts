@@ -148,7 +148,7 @@ export const googleSheetApi = {
     }
   },
 
-  async addRecord(data: { nis: string; pelanggaran: string; tanggal?: string; petugas: string; keterangan?: string; id?: string }): Promise<ApiResponse<{ pencatatan: Pencatatan[]; pembinaan: Pembinaan[] }>> {
+  async addRecord(data: { nis: string; pelanggaran: string; tanggal?: string; petugas: string; keterangan?: string; foto?: string; id?: string }): Promise<ApiResponse<{ pencatatan: Pencatatan[]; pembinaan: Pembinaan[] }>> {
     try {
       const response = await fetch('/api/data?action=addRecord', {
         method: 'POST',

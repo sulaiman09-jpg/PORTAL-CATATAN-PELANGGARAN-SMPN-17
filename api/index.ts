@@ -12,6 +12,7 @@ export interface Siswa {
   jk: 'L' | 'P';
   namaOrangTua: string;
   noHp: string;
+  foto?: string;
 }
 
 export interface Pelanggaran {
@@ -32,6 +33,7 @@ export interface Pencatatan {
   poin: number;
   petugas: string;
   keterangan: string;
+  foto?: string;
 }
 
 export interface Pembinaan {
@@ -57,21 +59,70 @@ dotenv.config();
 
 const app = express();
 
-app.use(express.json());
+// Custom middleware to avoid hanging in Vercel if req.body is already parsed by serverless environment
+app.use((req, res, next) => {
+  if (req.body !== undefined && req.body !== null) {
+    if (Buffer.isBuffer(req.body)) {
+      try {
+        req.body = JSON.parse((req.body as Buffer).toString('utf-8'));
+      } catch (e) {
+        // Leave as is
+      }
+    } else if (typeof req.body === 'string') {
+      try {
+        req.body = JSON.parse(req.body);
+      } catch (e) {
+        // Leave as is
+      }
+    }
+    next();
+  } else {
+    express.json()(req, res, next);
+  }
+});
 
 // Extremely robust request logger and URL normalizer middleware for Vercel Serverless environment
 app.use((req, res, next) => {
   const originalUrl = req.url;
   console.log(`[Express API] Incoming: ${req.method} ${originalUrl}`);
 
-  // We should NOT overwrite req.url with x-matched-path (which is always "/api/index.ts")
-  // because that discards the requested sub-path (like "/auth/login").
-  // Vercel naturally delivers the original path in req.url. 
-  // We only normalize if the URL literally contains the file name "/api/index.ts" or "/api/index".
-  if (req.url.startsWith('/api/index.ts')) {
-    req.url = req.url.replace('/api/index.ts', '/api');
-  } else if (req.url.startsWith('/api/index')) {
-    req.url = req.url.replace('/api/index', '/api');
+  // 1. Check for original URL headers set by Vercel or proxies as a fallback
+  const originalUrlHeader = req.headers['x-original-url'] as string;
+  const forwardedUrlHeader = req.headers['x-forwarded-url'] as string;
+  
+  let targetUrl = '';
+  if (originalUrlHeader && originalUrlHeader.startsWith('/api')) {
+    targetUrl = originalUrlHeader;
+  } else if (forwardedUrlHeader && forwardedUrlHeader.startsWith('/api')) {
+    targetUrl = forwardedUrlHeader;
+  }
+
+  if (targetUrl) {
+    console.log(`[Express API] Resolving req.url from header to: ${targetUrl}`);
+    req.url = targetUrl;
+  } else if (req.query && req.query.path) {
+    // 2. Query path parameter fallback (forwarded from vercel.json)
+    // Handle query path safely if it is an array or string
+    const rawPath = req.query.path;
+    const subPath = Array.isArray(rawPath) ? rawPath.join('/') : String(rawPath);
+    const cleanSubPath = subPath.replace(/^\/+|\/+$/g, '');
+    
+    const queryCopy = { ...req.query };
+    delete queryCopy.path;
+    const queryKeys = Object.keys(queryCopy);
+    const queryString = queryKeys.length > 0
+      ? '?' + queryKeys.map(k => `${k}=${encodeURIComponent(String(queryCopy[k]))}`).join('&')
+      : '';
+      
+    req.url = `/api/${cleanSubPath}${queryString}`;
+    console.log(`[Express API] Resolving req.url from query path to: ${req.url}`);
+  } else {
+    // 3. Fallback to clean literal "/api/index.ts" or "/api/index" if it was hit directly
+    if (req.url.startsWith('/api/index.ts')) {
+      req.url = req.url.replace('/api/index.ts', '/api');
+    } else if (req.url.startsWith('/api/index')) {
+      req.url = req.url.replace('/api/index', '/api');
+    }
   }
 
   // Clean double slashes
@@ -81,10 +132,16 @@ app.use((req, res, next) => {
   next();
 });
 
-// Path to persistent data store (use /tmp on Vercel for writable filesystem)
-const DATA_STORE_PATH = process.env.VERCEL
-  ? path.join('/tmp', 'data-store.json')
-  : path.join(process.cwd(), 'data-store.json');
+// Dynamic, foolproof check for writable filesystem (perfect for Vercel, Netlify, Cloud Run, or AWS)
+let DATA_STORE_PATH = path.join(process.cwd(), 'data-store.json');
+try {
+  const testPath = path.join(process.cwd(), '.write-test-vercel');
+  fs.writeFileSync(testPath, 'test');
+  fs.unlinkSync(testPath);
+} catch (e) {
+  DATA_STORE_PATH = path.join('/tmp', 'data-store.json');
+}
+console.log(`[Express API] Using persistent data store path: ${DATA_STORE_PATH}`);
 
 // Pre-defined users for simulation/authentication
 const preDefinedUsers = [
@@ -155,8 +212,8 @@ function readDB(): DBStructure {
         pembinaan: initialPembinaan
       };
 
-      // If running on Vercel, copy existing seed file from build workspace if it exists
-      if (process.env.VERCEL) {
+      // If we fell back to a temporary directory (e.g. on Vercel), copy seed file from build workspace if it exists
+      if (DATA_STORE_PATH !== path.join(process.cwd(), 'data-store.json')) {
         const localPath = path.join(process.cwd(), 'data-store.json');
         if (fs.existsSync(localPath)) {
           const content = fs.readFileSync(localPath, 'utf-8');
@@ -273,28 +330,37 @@ const apiRouter = express.Router();
 
 // Auth API Route
 apiRouter.post('/auth/login', (req, res) => {
-  const { username, password } = req.body;
-  const user = preDefinedUsers.find(u => u.username === username && u.password === password);
+  try {
+    const { username, password } = req.body || {};
+    const user = preDefinedUsers.find(u => u.username === username && u.password === password);
 
-  if (user) {
-    // Generate a simple mock JWT or token
-    const token = `mock-jwt-token-for-${user.username}-${user.role}`;
-    return res.json({
-      success: true,
-      token,
-      user: {
-        username: user.username,
-        nama: user.nama,
-        role: user.role,
-        kelasAjar: user.kelasAjar
-      }
+    if (user) {
+      // Generate a simple mock JWT or token
+      const token = `mock-jwt-token-for-${user.username}-${user.role}`;
+      return res.json({
+        success: true,
+        token,
+        user: {
+          username: user.username,
+          nama: user.nama,
+          role: user.role,
+          kelasAjar: user.kelasAjar
+        }
+      });
+    }
+
+    return res.status(401).json({
+      success: false,
+      message: 'Username atau password salah.'
+    });
+  } catch (error: any) {
+    console.error('Error in login handler:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Terjadi kesalahan sistem saat masuk.',
+      error: error.message
     });
   }
-
-  return res.status(401).json({
-    success: false,
-    message: 'Username atau password salah.'
-  });
 });
 
 // Settings & Config status API
@@ -309,7 +375,7 @@ apiRouter.get('/settings/config', (req, res) => {
 });
 
 apiRouter.post('/settings/config', (req, res) => {
-  const { googleScriptUrl } = req.body;
+  const { googleScriptUrl } = req.body || {};
   
   try {
     // Modify env file or environment dynamically in memory
@@ -403,7 +469,7 @@ apiRouter.get('/data', async (req, res) => {
 
 apiRouter.post('/data', async (req, res) => {
   const action = req.query.action as string;
-  const body = req.body;
+  const body = req.body || {};
 
   // Check if we should proxy to Google Sheets
   if (process.env.GOOGLE_SCRIPT_URL) {
@@ -427,7 +493,8 @@ apiRouter.post('/data', async (req, res) => {
         kelas: body.kelas,
         jk: body.jk,
         namaOrangTua: body.namaOrangTua,
-        noHp: body.noHp
+        noHp: body.noHp,
+        foto: body.foto || ''
       };
 
       // Check if NIS already exists for addition (only if not an edit/overwrite)
@@ -516,7 +583,8 @@ apiRouter.post('/data', async (req, res) => {
         pelanggaran: body.pelanggaran,
         poin: points,
         petugas: body.petugas,
-        keterangan: body.keterangan || ''
+        keterangan: body.keterangan || '',
+        foto: body.foto || ''
       };
 
       if (body.id) {

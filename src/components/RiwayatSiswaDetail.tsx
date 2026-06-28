@@ -277,13 +277,14 @@ export default function RiwayatSiswaDetail({
                       <th className="py-2.5 px-3 w-16 text-center">Poin</th>
                       <th className="py-2.5 px-3">Petugas BK</th>
                       <th className="py-2.5 px-3">Keterangan</th>
+                      <th className="py-2.5 px-3">Foto Bukti</th>
                       {canDelete && <th className="py-2.5 px-3 w-12 text-center">Aksi</th>}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50 text-slate-600 text-xs">
                     {studentRecords.length === 0 ? (
                       <tr>
-                        <td colSpan={canDelete ? 6 : 5} className="py-10 text-center italic text-slate-400">
+                        <td colSpan={canDelete ? 7 : 6} className="py-10 text-center italic text-slate-400">
                           Siswa bersih dari riwayat pelanggaran.
                         </td>
                       </tr>
@@ -296,6 +297,20 @@ export default function RiwayatSiswaDetail({
                           <td className="py-3 px-3 text-slate-500 font-medium">{record.petugas}</td>
                           <td className="py-3 px-3 italic max-w-xs truncate" title={record.keterangan}>
                             {record.keterangan || '-'}
+                          </td>
+                          <td className="py-3 px-3">
+                            {record.foto ? (
+                              <div className="relative group/photo inline-block">
+                                <img
+                                  src={record.foto}
+                                  alt="Bukti"
+                                  className="w-10 h-10 object-cover rounded-lg border border-slate-200 transition-all duration-300 hover:scale-[3.0] hover:translate-x-[-12px] hover:translate-y-[-12px] hover:z-50 relative cursor-zoom-in"
+                                  referrerPolicy="no-referrer"
+                                />
+                              </div>
+                            ) : (
+                              <span className="text-slate-300">-</span>
+                            )}
                           </td>
                           {canDelete && (
                             <td className="py-3 px-3 text-center">

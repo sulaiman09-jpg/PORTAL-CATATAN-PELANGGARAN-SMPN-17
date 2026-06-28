@@ -6,6 +6,7 @@ export interface Siswa {
   jk: 'L' | 'P';
   namaOrangTua: string;
   noHp: string;
+  foto?: string;
 }
 
 export interface Pelanggaran {
@@ -26,6 +27,7 @@ export interface Pencatatan {
   poin: number;
   petugas: string;
   keterangan: string;
+  foto?: string; // Base64 string of incident or student photo
 }
 
 export interface Pembinaan {
